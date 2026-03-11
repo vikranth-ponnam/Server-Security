@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      <div class="card">
+        <div class="card-header bg-primary text-white py-3">
+          <h5 class="mb-0"><i class="fas fa-search me-2"></i>Insurance Claim Analysis</h5>
+        </div>
+        <div class="card-body p-4">
+          {% if error %}
+          <div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>{{ error }}</div>
+          {% endif %}
+
+          <form method="POST" action="/predict">
+            <!-- ── Claimant Info ── -->
+            <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+              <i class="fas fa-user me-2"></i>Claimant Information
+            </h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <label class="form-label">Age</label>
+                <input type="number" name="age" class="form-control" value="35" min="18" max="80" required/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Policy Tenure (years)</label>
+                <input type="number" name="policy_tenure_years" class="form-control" value="5" step="0.1" min="0" required/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Customer Region</label>
+                <select name="customer_region" class="form-select">
+                  {% for r in ["North","South","East","West","Central"] %}
+                  <option>{{r}}</option>{% endfor %}
+                </select>
+              </div>
+            </div>
+
+            <!-- ── Policy & Claim ── -->
+            <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+              <i class="fas fa-file-invoice-dollar me-2"></i>Policy &amp; Claim Details
+            </h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <label class="form-label">Claim Amount (₹)</label>
+                <input type="number" name="claim_amount" class="form-control" value="25000" min="0" required/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Annual Premium (₹)</label>
+                <input type="number" name="annual_premium" class="form-control" value="3000" min="0" required/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Deductible Amount (₹)</label>
+                <select name="deductible_amount" class="form-select">
+                  {% for d in [500,1000,1500,2000,2500] %}
+                  <option>{{d}}</option>{% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Insurance Type</label>
+                <select name="insurance_type" class="form-select">
+                  {% for t in ["Auto","Health","Property","Life"] %}
+                  <option>{{t}}</option>{% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">No. of Prior Claims</label>
+                <input type="number" name="num_claims_history" class="form-control" value="2" min="0"/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Days to Report Incident</label>
+                <input type="number" name="days_to_report" class="form-control" value="5" min="0" max="90"/>
+              </div>
+            </div>
+
+            <!-- ── Incident Info ── -->
+            <h6 class="fw-bold text-primary mb-3 border-bottom pb-2">
+              <i class="fas fa-car-crash me-2"></i>Incident Details
+            </h6>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <label class="form-label">Incident Type</label>
+                <select name="incident_type" class="form-select">
+                  {% for t in ["Accident","Theft","Natural","Medical","Fire"] %}
+                  <option>{{t}}</option>{% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Incident Severity</label>
+                <select name="incident_severity" class="form-select">
+                  {% for s in ["Minor","Moderate","Major","Total Loss"] %}
+                  <option>{{s}}</option>{% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Police Report Filed?</label>
+                <select name="police_report_filed" class="form-select">
+                  <option value="1">Yes</option>
+                  <option value="0">No</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">No. of Witnesses</label>
+                <input type="number" name="witnesses" class="form-control" value="1" min="0" max="10"/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Vehicle Age (years)</label>
+                <input type="number" name="vehicle_age_years" class="form-control" value="3" min="0" max="25"/>
+              </div>
+            </div>
+
+            <div class="text-end">
+              <button type="reset" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-redo me-1"></i>Reset
+              </button>
+              <button type="submit" class="btn btn-primary px-5">
+                <i class="fas fa-search me-2"></i>Analyse Claim
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
