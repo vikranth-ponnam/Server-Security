@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+  <h4 class="fw-bold mb-4"><i class="fas fa-chart-bar me-2 text-primary"></i>Model Performance Dashboard</h4>
+
+  {% if metrics %}
+  <div id="dashApp"></div>
+  {% else %}
+  <div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    Models not yet trained. Please run <code>python generate_data.py</code> first.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if metrics %}
+<script>
+const METRICS = {{ metrics | safe }};
+const COLORS  = {"random_forest":"#1a237e","decision_tree":"#e53935","xgboost":"#fb8c00"};
+const LABELS  = {"random_forest":"Random Forest","decision_tree":"Decision Tree","xgboost":"XGBoost"};
+
+const app = document.getElementById("dashApp");
+
+// ── Summary cards ──
+let cards = '<div class="row g-4 mb-5">';
+for(const [name, m] of Object.entries(METRICS)){
+  cards += `
+  <div class="col-md-4">
+    <div class="card p-4 text-center">
+      <h6 class="fw-bold" style="color:${COLORS[name]}">${LABELS[name]}</h6>
+      <div class="row g-2 mt-1">
+        <div class="col-4"><div class="p-2 rounded" style="background:#e8eaf6">
+          <small class="text-muted d-block">Accuracy</small><strong>${m.accuracy}%</strong></div></div>
+        <div class="col-4"><div class="p-2 rounded" style="background:#e8eaf6">
+          <small class="text-muted d-block">F1 Score</small><strong>${m.f1}%</strong></div></div>
+        <div class="col-4"><div class="p-2 rounded" style="background:#e8eaf6">
+          <small class="text-muted d-block">ROC-AUC</small><strong>${m.roc_auc}%</strong></div></div>
+      </div>
+    </div>
+  </div>`;
+}
+cards += '</div>';
+
+// ── Bar chart ──
+const barSection = `
+<div class="row g-4 mb-5">
+  <div class="col-lg-7">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3 text-primary">Metric Comparison</h6>
+      <canvas id="barChart" height="220"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card p-4">
+      <h6 class="fw-bold mb-3 text-primary">Confusion Matrix – XGBoost</h6>
+      <canvas id="cmChart" height="220"></canvas>
+    </div>
+  </div>
+</div>`;
+
+app.innerHTML = cards + barSection;
+
+// Bar chart
+const names = Object.keys(METRICS);
+new Chart(document.getElementById("barChart"),{
+  type:"bar",
+  data:{
+    labels:["Accuracy","F1 Score","ROC-AUC"],
+    datasets: names.map(n=>({
+      label:LABELS[n],
+      data:[METRICS[n].accuracy, METRICS[n].f1, METRICS[n].roc_auc],
+      backgroundColor:COLORS[n],
+      borderRadius:6,
+    }))
+  },
+  options:{plugins:{legend:{position:"bottom"}},
+           scales:{y:{min:80,max:100,grid:{display:false}},
+                   x:{grid:{display:false}}}}
+});
+
+// CM heatmap (XGBoost)
+const cm = METRICS["xgboost"].cm;
+new Chart(document.getElementById("cmChart"),{
+  type:"bar",
+  data:{
+    labels:["True Negative","False Positive","False Negative","True Positive"],
+    datasets:[{
+      label:"Count",
+      data:[cm[0][0],cm[0][1],cm[1][0],cm[1][1]],
+      backgroundColor:["#43a047","#e53935","#fb8c00","#1a237e"],
+      borderRadius:6,
+    }]
+  },
+  options:{plugins:{legend:{display:false}},
+           scales:{y:{grid:{display:false}},x:{grid:{display:false}}}}
+});
+</script>
+{% endif %}
+{% endblock %}
